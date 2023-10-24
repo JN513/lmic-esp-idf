@@ -35,8 +35,8 @@
 void lmic_aes_encrypt(u1_t *data, u1_t *key);
 
 // global area for passing parameters (aux, key)
-u4_t AESAUX[16/sizeof(u4_t)];
-u4_t AESKEY[16/sizeof(u4_t)];
+u4_t AESAUX[16 / sizeof(u4_t)];
+u4_t AESKEY[16 / sizeof(u4_t)];
 
 // Shift the given buffer left one bit
 static void shift_left(xref2u1_t buf, u1_t len) {
@@ -57,7 +57,7 @@ static void os_aes_cmac(xref2u1_t buf, u2_t len, u1_t prepend_aux) {
     if (prepend_aux)
         lmic_aes_encrypt(AESaux, AESkey);
     else
-        memset (AESaux, 0, 16);
+        memset(AESaux, 0, 16);
 
     while (len > 0) {
         u1_t need_padding = 0;
@@ -85,14 +85,14 @@ static void os_aes_cmac(xref2u1_t buf, u2_t len, u1_t prepend_aux) {
             u1_t msb = final_key[0] & 0x80;
             shift_left(final_key, sizeof(final_key));
             if (msb)
-                final_key[sizeof(final_key)-1] ^= 0x87;
+                final_key[sizeof(final_key) - 1] ^= 0x87;
 
             // If the final block was not complete, calculate K2 from K1
             if (need_padding) {
                 msb = final_key[0] & 0x80;
                 shift_left(final_key, sizeof(final_key));
                 if (msb)
-                    final_key[sizeof(final_key)-1] ^= 0x87;
+                    final_key[sizeof(final_key) - 1] ^= 0x87;
             }
 
             // Xor with K1 or K2
@@ -107,7 +107,7 @@ static void os_aes_cmac(xref2u1_t buf, u2_t len, u1_t prepend_aux) {
 // Run AES-CTR using the key in AESKEY and using AESAUX as the
 // counter block. The last byte of the counter block will be incremented
 // for every block. The given buffer will be encrypted in place.
-static void os_aes_ctr (xref2u1_t buf, u2_t len) {
+static void os_aes_ctr(xref2u1_t buf, u2_t len) {
     u1_t ctr[16];
     while (len) {
         // Encrypt the counter block with the selected key
@@ -123,21 +123,21 @@ static void os_aes_ctr (xref2u1_t buf, u2_t len) {
     }
 }
 
-u4_t os_aes (u1_t mode, xref2u1_t buf, u2_t len) {
+u4_t os_aes(u1_t mode, xref2u1_t buf, u2_t len) {
     switch (mode & ~AES_MICNOAUX) {
-        case AES_MIC:
-            os_aes_cmac(buf, len, /* prepend_aux */ !(mode & AES_MICNOAUX));
-            return os_rmsbf4(AESaux);
+    case AES_MIC:
+        os_aes_cmac(buf, len, /* prepend_aux */ !(mode & AES_MICNOAUX));
+        return os_rmsbf4(AESaux);
 
-        case AES_ENC:
-            // TODO: Check / handle when len is not a multiple of 16
-            for (u1_t i = 0; i < len; i += 16)
-                lmic_aes_encrypt(buf+i, AESkey);
-            break;
+    case AES_ENC:
+        // TODO: Check / handle when len is not a multiple of 16
+        for (u1_t i = 0; i < len; i += 16)
+            lmic_aes_encrypt(buf + i, AESkey);
+        break;
 
-        case AES_CTR:
-            os_aes_ctr(buf, len);
-            break;
+    case AES_CTR:
+        os_aes_ctr(buf, len);
+        break;
     }
     return 0;
 }
