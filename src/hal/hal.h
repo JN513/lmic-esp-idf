@@ -17,8 +17,8 @@ struct lmic_pinmap {
     u1_t nss;
     u1_t rxtx;
     u1_t rst;
-    u1_t dio[NUM_DIO];
-    u1_t spi[3]; // MISO, MOSI, SCK
+    u1_t dio[NUM_DIO]; // DIO0, DIO1, DIO2
+    u1_t spi[3];       // MISO, MOSI, SCK
 };
 
 typedef struct lmic_pinmap lmic_pinmap;
